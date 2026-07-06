@@ -31,9 +31,30 @@ specdrift validate .platform/manifest.yaml --schema manifest.schema.json --rules
   yields ONE finding at the decision point, not one per alternative. (Why in-tree: every
   candidate library failed this project's own gates — one ships a maintenance-fee EULA in
   its NuGet binaries, one compiles code at runtime, one silently skips `if/then`.)
-- **`drift`** *(v1 roadmap)* — manifest ↔ repository reality: a feature enabled with its
-  package/wiring absent, committed API documents diverging from built ones, schema version
-  skew. Reports, never auto-fixes.
+- **`drift`** — manifest ↔ repository reality, driven by a drift profile
+  (`.specdrift/drift.yaml`): a feature enabled with its package or wiring call absent
+  (each direction has its own finding — including "referenced but not enabled" dead
+  weight), committed API documents diverging semantically from built ones, and manifest
+  schema-version skew. Detection is TEXTUAL by design and says so; reports, never
+  auto-fixes.
+
+  ```yaml
+  # .specdrift/drift.yaml
+  version: 1
+  manifest: .platform/manifest.yaml
+  schemaVersion: 1
+  wiring:
+    - feature: features.outbox
+      package: Platform.Messaging
+      call: AddPlatformOutbox
+    - feature: providers.auth       # value-gated wiring
+      equals: openid
+      package: Platform.Auth
+      call: AddPlatformAuth
+  openapi:
+    - committed: specs/openapi.json
+      built: artifacts/openapi.json
+  ```
 - **`mcp`** *(v1 roadmap)* — the same verbs served over stdio MCP, so coding agents ask the
   engine instead of guessing.
 

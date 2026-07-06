@@ -90,11 +90,11 @@ public static class RuleEngine
                 continue;
             }
 
-            if (rule.Require is { } require && IsAbsentOrEmpty(Resolve(manifest, require)))
+            if (rule.Require is { } require && JsonPaths.IsAbsentOrEmpty(JsonPaths.Resolve(manifest, require)))
             {
                 findings.Add(new Finding(rule.Id, rule.Severity, require, rule.Message));
             }
-            else if (rule.Forbid is { } forbid && !IsAbsentOrEmpty(Resolve(manifest, forbid)))
+            else if (rule.Forbid is { } forbid && !JsonPaths.IsAbsentOrEmpty(JsonPaths.Resolve(manifest, forbid)))
             {
                 findings.Add(new Finding(rule.Id, rule.Severity, forbid, rule.Message));
             }
@@ -105,10 +105,10 @@ public static class RuleEngine
 
     private static bool Holds(JsonNode manifest, Condition when)
     {
-        var node = Resolve(manifest, when.Path);
+        var node = JsonPaths.Resolve(manifest, when.Path);
         return when.Op switch
         {
-            "exists" => !IsAbsentOrEmpty(node),
+            "exists" => !JsonPaths.IsAbsentOrEmpty(node),
             "equals" => node is JsonValue value && value.ToString() == when.Value,
             "contains" => node switch
             {
@@ -121,30 +121,4 @@ public static class RuleEngine
         };
     }
 
-    private static JsonNode? Resolve(JsonNode root, string dottedPath)
-    {
-        JsonNode? current = root;
-        foreach (var segment in dottedPath.Split('.'))
-        {
-            current = current switch
-            {
-                JsonObject obj => obj[segment],
-                _ => null,
-            };
-            if (current is null)
-            {
-                return null;
-            }
-        }
-
-        return current;
-    }
-
-    private static bool IsAbsentOrEmpty(JsonNode? node) => node switch
-    {
-        null => true,
-        JsonValue value => string.IsNullOrEmpty(value.ToString()),
-        JsonArray array => array.Count == 0,
-        _ => false,
-    };
 }

@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.0] - 2026-07-06 (M2)
+
+### Added
+- `specdrift drift --repo <dir> [--profile <drift.yaml>]`: manifest ↔ repository reality.
+  Wiring checks in both directions (feature on / package or call absent → error;
+  referenced-but-not-enabled → dead-weight warning; value-gated features via `equals`),
+  semantic committed-vs-built OpenAPI comparison (formatting is not drift), manifest
+  schema-version skew, and a loud finding when the profile's manifest is missing.
+  bin/obj/.git are never scanned; scans are ordered for byte-identical reports.
+  Proof: a truthful generated app reports clean; flipping two manifest features with the
+  code untouched names both exact gaps.
+
 ## [0.1.0] - 2026-07-06 (M1)
 
 ### Added

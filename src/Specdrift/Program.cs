@@ -16,6 +16,7 @@ namespace Specdrift
 
             usage:
               specdrift validate <manifest.(yaml|yml|json)> --schema <schema.json> [--rules <rules.yaml>] [--format text|json]
+              specdrift drift --repo <dir> [--profile <drift.yaml>] [--format text|json]
             """;
 
         /// <summary>Runs the CLI; returns the process exit code.</summary>
@@ -25,6 +26,11 @@ namespace Specdrift
             {
                 stdout.WriteLine(Usage);
                 return args.Length == 0 ? 2 : 0;
+            }
+
+            if (args[0] == "drift")
+            {
+                return RunDrift(args, stdout, stderr);
             }
 
             if (args[0] != "validate")
@@ -73,6 +79,50 @@ namespace Specdrift
                     File.ReadAllText(manifestPath),
                     File.ReadAllText(schemaPath),
                     rulesPath is null ? null : File.ReadAllText(rulesPath));
+                stdout.WriteLine(format == "json" ? report.ToJson() : report.ToText());
+                return report.ExitCode;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or FormatException or System.Text.Json.JsonException)
+            {
+                stderr.WriteLine($"specdrift: {ex.Message}");
+                return 2;
+            }
+        }
+
+        private static int RunDrift(string[] args, TextWriter stdout, TextWriter stderr)
+        {
+            string? repo = null, profilePath = null;
+            var format = "text";
+            for (var i = 1; i < args.Length; i++)
+            {
+                switch (args[i])
+                {
+                    case "--repo":
+                        repo = Next(args, ref i);
+                        break;
+                    case "--profile":
+                        profilePath = Next(args, ref i);
+                        break;
+                    case "--format":
+                        format = Next(args, ref i);
+                        break;
+                    default:
+                        stderr.WriteLine($"specdrift: unexpected argument '{args[i]}'");
+                        return 2;
+                }
+            }
+
+            if (repo is null || format is not ("text" or "json"))
+            {
+                stderr.WriteLine(Usage);
+                return 2;
+            }
+
+            profilePath ??= Path.Combine(repo, ".specdrift", "drift.yaml");
+            try
+            {
+                var profile = Specdrift.Drift.DriftEngine.LoadProfile(File.ReadAllText(profilePath));
+                var report = Specdrift.Drift.DriftEngine.Run(repo, profile);
                 stdout.WriteLine(format == "json" ? report.ToJson() : report.ToText());
                 return report.ExitCode;
             }
