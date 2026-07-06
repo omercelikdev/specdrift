@@ -1,0 +1,26 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: build
+        run: dotnet build specdrift.sln -c Release
+      - name: test
+        run: dotnet test specdrift.sln -c Release --no-build
+      - name: license gate
+        run: |
+          dotnet restore specdrift.sln
+          python3 scripts/license-gate.py
+      - name: mutation gate
+        run: |
+          dotnet tool restore
+          dotnet stryker

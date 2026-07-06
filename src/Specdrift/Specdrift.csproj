@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Specdrift</RootNamespace>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>specdrift</ToolCommandName>
+    <PackageId>specdrift</PackageId>
+    <Description>Deterministic spec lint for manifest-driven golden paths: schema + cross-field invariant validation today; manifest-vs-repo drift and an MCP server on the v1 roadmap. Never calls an LLM — LLMs call it.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/omercelikdev/specdrift</RepositoryUrl>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="YamlDotNet" />
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+</Project>
