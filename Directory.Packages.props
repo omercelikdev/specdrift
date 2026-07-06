@@ -2,6 +2,8 @@
   <!-- Central package management: every version pinned; "latest" is forbidden. -->
   <ItemGroup>
     <PackageVersion Include="YamlDotNet" Version="18.1.0" />
+    <PackageVersion Include="ModelContextProtocol" Version="1.4.0" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.9" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageVersion Include="xunit" Version="2.9.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />

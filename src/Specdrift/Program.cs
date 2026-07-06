@@ -4,6 +4,10 @@ return Specdrift.Cli.Run(args, Console.Out, Console.Error);
 
 namespace Specdrift
 {
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Hosting;
+    using Microsoft.Extensions.Logging;
+
     /// <summary>
     /// The CLI shell — argument parsing kept by hand ON PURPOSE: one verb today, zero
     /// dependencies to audit, and the exit-code contract stays visible in one file.
@@ -17,6 +21,7 @@ namespace Specdrift
             usage:
               specdrift validate <manifest.(yaml|yml|json)> --schema <schema.json> [--rules <rules.yaml>] [--format text|json]
               specdrift drift --repo <dir> [--profile <drift.yaml>] [--format text|json]
+              specdrift mcp                          # stdio MCP server exposing spec_validate + spec_drift
             """;
 
         /// <summary>Runs the CLI; returns the process exit code.</summary>
@@ -31,6 +36,11 @@ namespace Specdrift
             if (args[0] == "drift")
             {
                 return RunDrift(args, stdout, stderr);
+            }
+
+            if (args[0] == "mcp")
+            {
+                return RunMcpServer();
             }
 
             if (args[0] != "validate")
@@ -131,6 +141,23 @@ namespace Specdrift
                 stderr.WriteLine($"specdrift: {ex.Message}");
                 return 2;
             }
+        }
+
+        // The server owns stdio; logs must go to stderr or they corrupt the protocol.
+        private static int RunMcpServer()
+        {
+            var builder = Host.CreateApplicationBuilder();
+            builder.Logging.ClearProviders();
+            builder.Services
+                .AddMcpServer(options => options.ServerInfo = new()
+                {
+                    Name = "specdrift",
+                    Version = typeof(Cli).Assembly.GetName().Version?.ToString(3) ?? "0.0.0",
+                })
+                .WithStdioServerTransport()
+                .WithToolsFromAssembly(typeof(Cli).Assembly);
+            builder.Build().Run();
+            return 0;
         }
 
         private static string? Next(string[] args, ref int i)

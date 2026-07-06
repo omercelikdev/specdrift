@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0] - 2026-07-06 (M3)
+
+### Added
+- `specdrift mcp`: a stdio MCP server exposing `spec_validate` and `spec_drift` — thin
+  adapters over the same engines, returning the CLI's JSON findings. Proven at the
+  protocol level: a raw JSON-RPC exchange (initialize → tools/list → tools/call) reads
+  a real drift finding back from a fixture repo.
+
 ## [0.2.0] - 2026-07-06 (M2)
 
 ### Added

@@ -55,8 +55,12 @@ specdrift validate .platform/manifest.yaml --schema manifest.schema.json --rules
     - committed: specs/openapi.json
       built: artifacts/openapi.json
   ```
-- **`mcp`** *(v1 roadmap)* — the same verbs served over stdio MCP, so coding agents ask the
-  engine instead of guessing.
+- **`mcp`** — the same two verbs served over stdio MCP (`spec_validate`, `spec_drift`), so
+  coding agents ask the engine instead of guessing. Register it like any stdio server:
+
+  ```json
+  { "mcpServers": { "specdrift": { "command": "specdrift", "args": ["mcp"] } } }
+  ```
 
 ## Profiles are data, the engine is generic
 
