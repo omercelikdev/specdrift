@@ -94,6 +94,29 @@ public sealed class DriftTests : IDisposable
     }
 
     [Fact]
+    public void In_gated_wiring_accepts_any_listed_value_without_false_dead_weight()
+    {
+        const string profile = """
+            version: 1
+            manifest: manifest.yaml
+            wiring:
+              - feature: providers.auth
+                in: [openid, apikey]
+                package: Platform.Auth
+                call: AddPlatformAuth
+            """;
+        Write("src/App/App.csproj", """<PackageReference Include="Platform.Auth" />""");
+        Write("src/App/Program.cs", "builder.AddPlatformAuth(o => o.Strategy = Strategy.ApiKey);");
+
+        Write("manifest.yaml", "providers:\n  auth: apikey");
+        Assert.Empty(DriftEngine.Run(_repo, DriftEngine.LoadProfile(profile)).Findings);   // no dead-weight FP
+
+        Write("manifest.yaml", "providers:\n  auth: none");
+        Assert.Contains(DriftEngine.Run(_repo, DriftEngine.LoadProfile(profile)).Findings,
+            f => f.RuleId == "SPEC0203");
+    }
+
+    [Fact]
     public void Bin_and_obj_are_never_scanned()
     {
         Write("src/App/obj/Generated.cs", "builder.AddPlatformOutbox();");

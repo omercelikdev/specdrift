@@ -10,6 +10,7 @@ public sealed record Rule(
     Condition? When,
     string? Require,
     string? Forbid,
+    Condition? Deny,
     Severity Severity,
     string Message);
 
@@ -45,9 +46,20 @@ public static class RuleEngine
                 ?? throw new FormatException($"Rule '{id}' has no 'message' — messages must teach the fix.");
             var require = rule["require"]?["path"]?.GetValue<string>();
             var forbid = rule["forbid"]?["path"]?.GetValue<string>();
-            if (require is null == (forbid is null))
+            Condition? deny = null;
+            if (rule["deny"] is JsonObject denyNode)
             {
-                throw new FormatException($"Rule '{id}' must declare exactly one of 'require' or 'forbid'.");
+                deny = new Condition(
+                    denyNode["path"]?.GetValue<string>()
+                        ?? throw new FormatException($"Rule '{id}': 'deny' needs a 'path'."),
+                    "equals",
+                    denyNode["value"]?.ToString()
+                        ?? throw new FormatException($"Rule '{id}': 'deny' needs a 'value'."));
+            }
+
+            if (new object?[] { require, forbid, deny }.Count(c => c is not null) != 1)
+            {
+                throw new FormatException($"Rule '{id}' must declare exactly one of 'require', 'forbid' or 'deny'.");
             }
 
             Condition? when = null;
@@ -73,7 +85,7 @@ public static class RuleEngine
                 var other => throw new FormatException($"Rule '{id}': unknown severity '{other}'."),
             };
 
-            rules.Add(new Rule(id, rule["description"]?.GetValue<string>(), when, require, forbid, severity, message));
+            rules.Add(new Rule(id, rule["description"]?.GetValue<string>(), when, require, forbid, deny, severity, message));
         }
 
         return rules;
@@ -97,6 +109,11 @@ public static class RuleEngine
             else if (rule.Forbid is { } forbid && !JsonPaths.IsAbsentOrEmpty(JsonPaths.Resolve(manifest, forbid)))
             {
                 findings.Add(new Finding(rule.Id, rule.Severity, forbid, rule.Message));
+            }
+            else if (rule.Deny is { } deny
+                && JsonPaths.Resolve(manifest, deny.Path)?.ToString() == deny.Value)
+            {
+                findings.Add(new Finding(rule.Id, rule.Severity, deny.Path, rule.Message));
             }
         }
 

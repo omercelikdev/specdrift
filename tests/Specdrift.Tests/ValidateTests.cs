@@ -168,6 +168,31 @@ public class ValidateTests
     }
 
     [Fact]
+    public void Deny_rules_reject_a_specific_value_under_a_condition()
+    {
+        const string rules = """
+            version: 1
+            rules:
+              - id: SPEC0199
+                when: { path: features.outbox, op: exists }
+                deny: { path: providers.broker, value: none }
+                message: "outbox needs a broker - set providers.broker or drop the outbox."
+            """;
+        const string schema = """{ "type": "object" }""";
+
+        var bad = ManifestValidator.Validate(
+            "features:\n  outbox: true\nproviders:\n  broker: none", schema, rules);
+        var finding = Assert.Single(bad.Findings);
+        Assert.Equal("SPEC0199", finding.RuleId);
+        Assert.Contains("needs a broker", finding.Message);
+
+        Assert.Empty(ManifestValidator.Validate(
+            "features:\n  outbox: true\nproviders:\n  broker: rabbitmq", schema, rules).Findings);
+        Assert.Empty(ManifestValidator.Validate(
+            "providers:\n  broker: none", schema, rules).Findings);   // no outbox → no rule
+    }
+
+    [Fact]
     public void Failed_if_branches_and_passing_oneOf_alternatives_never_produce_noise()
     {
         // A kind-discriminated schema, the exact shape that buried real findings in branch noise.

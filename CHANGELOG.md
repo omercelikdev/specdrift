@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.0] - 2026-07-06
+
+### Added
+- Rules: the third constraint kind `deny` — "when the condition holds, this path must
+  NOT equal that value" (e.g. outbox enabled → providers.broker must not be `none`).
+- Drift: `in`-gated wiring — a feature counts as enabled for ANY listed value
+  (`in: [openid, apikey]`), killing the false dead-weight report the single-value
+  `equals` produced for multi-strategy providers.
+
 ## [0.3.0] - 2026-07-06 (M3)
 
 ### Added

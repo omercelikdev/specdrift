@@ -5,7 +5,7 @@ using Specdrift.Yaml;
 namespace Specdrift.Drift;
 
 /// <summary>One wiring expectation: when the manifest enables a feature, the repo must show it.</summary>
-public sealed record WiringRule(string Feature, string? EqualsValue, string? Package, string? Call);
+public sealed record WiringRule(string Feature, IReadOnlyList<string>? In, string? Package, string? Call);
 
 /// <summary>One committed-vs-built artifact pair.</summary>
 public sealed record ArtifactPair(string Committed, string Built);
@@ -54,7 +54,12 @@ public static class DriftEngine
                 throw new FormatException($"Wiring rule for '{feature}' declares neither 'package' nor 'call'.");
             }
 
-            wiring.Add(new WiringRule(feature, rule["equals"]?.ToString(), package, call));
+            IReadOnlyList<string>? enabledValues = rule["equals"] is { } single
+                ? [single.ToString()]
+                : rule["in"] is JsonArray set
+                    ? set.Select(v => v!.ToString()).ToList()
+                    : null;
+            wiring.Add(new WiringRule(feature, enabledValues, package, call));
         }
 
         var openapi = new List<ArtifactPair>();
@@ -125,8 +130,8 @@ public static class DriftEngine
         foreach (var rule in wiring)
         {
             var node = JsonPaths.Resolve(manifest, rule.Feature);
-            var enabled = rule.EqualsValue is { } expected
-                ? node?.ToString() == expected
+            var enabled = rule.In is { } values
+                ? node is not null && values.Contains(node.ToString())
                 : !JsonPaths.IsAbsentOrEmpty(node) && node?.ToString() != "false";
 
             var packagePresent = rule.Package is { } package
