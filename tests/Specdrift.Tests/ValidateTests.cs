@@ -141,6 +141,17 @@ public class ValidateTests
     }
 
     [Fact]
+    public void A_quoted_rules_version_hard_fails_instead_of_crashing()
+    {
+        // `version: "1"` is a string by design — it must fail loudly, not throw an InvalidOperationException.
+        var ex = Assert.Throws<FormatException>(() => RuleEngine.Load("""
+            version: "1"
+            rules: []
+            """));
+        Assert.Contains("never guess forward", ex.Message);
+    }
+
+    [Fact]
     public void Malformed_rules_fail_loudly_with_the_rule_id()
     {
         Assert.Contains("exactly one of", Assert.Throws<FormatException>(() => RuleEngine.Load("""

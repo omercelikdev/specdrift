@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.1] - 2026-07-10
+
+### Fixed
+- Schema: fractional `minimum`/`maximum` bounds were read as integers, so `minimum: 0.5`
+  truncated to `0` and let `0.2` through in silence. Bounds on numbers are now compared as
+  numbers. (`minLength`/`minItems` stay integer-valued, as the specification defines them.)
+- Drift: a quoted `schemaVersion: "1"` — a string by the YAML reader's deliberate design —
+  crashed `drift` with an unhandled `InvalidOperationException` instead of reporting
+  `SPEC0221`. Manifest, profile and rules versions are now read defensively: a wrong type is
+  a finding or a loud `FormatException`, never a cast. Messages render the JSON form, so `1`
+  and `"1"` read apart.
+
 ## [0.4.0] - 2026-07-06
 
 ### Added

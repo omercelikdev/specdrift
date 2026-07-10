@@ -28,12 +28,12 @@ public static class RuleEngine
     {
         var root = YamlToJson.Parse(rulesYaml)
             ?? throw new FormatException("The rules file is empty.");
-        var version = root["version"]?.GetValue<long>()
+        var versionNode = root["version"]
             ?? throw new FormatException("The rules file declares no 'version'.");
-        if (version != 1)
+        if (!JsonPaths.TryLong(versionNode, out var version) || version != 1)
         {
             throw new FormatException(
-                $"Rules version {version} is not understood by this engine (supported: 1) — never guess forward.");
+                $"Rules version {JsonPaths.Describe(versionNode)} is not understood by this engine (supported: 1) — never guess forward.");
         }
 
         var rules = new List<Rule>();
