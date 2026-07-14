@@ -63,6 +63,17 @@ public class SchemaEvaluatorTests
     }
 
     [Fact]
+    public void Fractional_bounds_are_compared_as_numbers_not_truncated_to_integers()
+    {
+        // Reading the BOUND as a long rounded 0.5 down to 0 and let 0.2 through in silence.
+        var schema = """{ "properties": { "ratio": { "type": "number", "minimum": 0.5, "maximum": 1.5 } } }""";
+        Assert.Contains("under the minimum", Single("ratio: 0.2", schema));
+        Assert.Contains("exceeds the maximum", Single("ratio: 1.9", schema));
+        Assert.Empty(Eval("ratio: 0.5", schema));
+        Assert.Empty(Eval("ratio: 1.5", schema));
+    }
+
+    [Fact]
     public void Required_and_additionalProperties_guard_the_envelope()
     {
         var schema = """

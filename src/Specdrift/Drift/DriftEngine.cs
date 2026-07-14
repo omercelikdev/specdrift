@@ -30,12 +30,12 @@ public static class DriftEngine
     {
         var root = YamlToJson.Parse(profileYaml)
             ?? throw new FormatException("The drift profile is empty.");
-        var version = root["version"]?.GetValue<long>()
+        var versionNode = root["version"]
             ?? throw new FormatException("The drift profile declares no 'version'.");
-        if (version != 1)
+        if (!JsonPaths.TryLong(versionNode, out var version) || version != 1)
         {
             throw new FormatException(
-                $"Drift profile version {version} is not understood by this engine (supported: 1) — never guess forward.");
+                $"Drift profile version {JsonPaths.Describe(versionNode)} is not understood by this engine (supported: 1) — never guess forward.");
         }
 
         var manifestPath = root["manifest"]?.GetValue<string>()
@@ -73,9 +73,21 @@ public static class DriftEngine
                     ?? throw new FormatException("Every openapi entry needs a 'built' path.")));
         }
 
+        long? expectedSchemaVersion = null;
+        if (root["schemaVersion"] is { } declared)
+        {
+            if (!JsonPaths.TryLong(declared, out var parsed))
+            {
+                throw new FormatException(
+                    $"The drift profile's 'schemaVersion' must be an integer; got {JsonPaths.Describe(declared)}.");
+            }
+
+            expectedSchemaVersion = parsed;
+        }
+
         return new DriftProfile(
             manifestPath,
-            root["schemaVersion"]?.GetValue<long>(),
+            expectedSchemaVersion,
             wiring,
             openapi);
     }
@@ -109,11 +121,12 @@ public static class DriftEngine
             return;
         }
 
-        var actual = JsonPaths.Resolve(manifest, "schemaVersion")?.GetValue<long>();
-        if (actual != expected)
+        // A quoted `schemaVersion: "1"` stays a string by design — report it, never cast blindly.
+        var declared = JsonPaths.Resolve(manifest, "schemaVersion");
+        if (!JsonPaths.TryLong(declared, out var actual) || actual != expected)
         {
             findings.Add(new Finding("SPEC0221", Severity.Error, "schemaVersion",
-                $"manifest declares schemaVersion {actual?.ToString() ?? "<none>"} but this profile understands {expected} — align them, never guess forward"));
+                $"manifest declares schemaVersion {JsonPaths.Describe(declared)} but this profile understands {expected} — align them, never guess forward"));
         }
     }
 
