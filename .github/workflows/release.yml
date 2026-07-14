@@ -7,9 +7,15 @@ name: release
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      image_ref:
+        description: "Existing tag to (re)publish the container image for (e.g. v0.4.1)"
+        required: true
 
 jobs:
   publish:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -45,3 +51,29 @@ jobs:
           version="${GITHUB_REF_NAME#v}"
           gh release create "$GITHUB_REF_NAME" --title "specdrift $version" --generate-notes \
             $(case "$version" in *-*) echo --prerelease;; esac)
+
+  # The container face of the same release: ghcr.io/omercelikdev/specdrift — no secret
+  # (GITHUB_TOKEN writes packages). Runs on every tag, and on dispatch for an existing tag.
+  image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.image_ref || github.ref }}
+      - name: version from the ref
+        id: v
+        run: |
+          ref="${{ github.event_name == 'workflow_dispatch' && inputs.image_ref || github.ref_name }}"
+          echo "version=${ref#v}" >> "$GITHUB_OUTPUT"
+      - name: ghcr login
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      - name: build + push
+        run: |
+          image="ghcr.io/${{ github.repository }}"
+          docker build -t "$image:${{ steps.v.outputs.version }}" -t "$image:latest" .
+          docker push "$image:${{ steps.v.outputs.version }}"
+          docker push "$image:latest"
