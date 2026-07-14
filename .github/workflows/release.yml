@@ -1,0 +1,47 @@
+# Publishes specdrift to nuget.org via TRUSTED PUBLISHING — no stored secret: the
+# workflow exchanges its GitHub OIDC token for a ~1h single-use key against this
+# repository's Trusted Publishing policy on nuget.org. Tag v<version> (matching the
+# csproj <Version>) on green main to release.
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write   # the GitHub release
+      id-token: write   # the OIDC token Trusted Publishing exchanges
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: gates
+        run: |
+          dotnet build Specdrift.sln --nologo -c Release
+          dotnet test Specdrift.sln --no-build --nologo -c Release
+      - name: pack
+        run: dotnet pack src/Specdrift/Specdrift.csproj --nologo -c Release --no-build -o out
+      # Login LAST-MINUTE: the exchanged key lives ~1 hour.
+      - name: trusted-publishing login (OIDC -> temp key)
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: omercelikdev   # the nuget.org PROFILE name the policy belongs to
+      - name: push to nuget.org
+        run: |
+          dotnet nuget push "out/*.nupkg" \
+            --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          gh release create "$GITHUB_REF_NAME" --title "specdrift $version" --generate-notes \
+            $(case "$version" in *-*) echo --prerelease;; esac)
