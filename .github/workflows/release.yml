@@ -61,9 +61,10 @@ jobs:
       contents: read
       packages: write
     steps:
+      # Dispatch backfills build from the DEFAULT branch (the Dockerfile may postdate the
+      # tag; the sources are identical when nothing but docker infra landed since) and
+      # only take the version LABEL from the input.
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.image_ref || github.ref }}
       - name: version from the ref
         id: v
         run: |
