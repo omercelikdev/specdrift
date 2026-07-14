@@ -72,9 +72,12 @@ jobs:
           echo "version=${ref#v}" >> "$GITHUB_OUTPUT"
       - name: ghcr login
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
-      - name: build + push
+      # Multi-arch: Apple Silicon devs and arm64 CI runners are first-class, not emulated.
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: build + push (amd64 + arm64)
         run: |
           image="ghcr.io/${{ github.repository }}"
-          docker build -t "$image:${{ steps.v.outputs.version }}" -t "$image:latest" .
-          docker push "$image:${{ steps.v.outputs.version }}"
-          docker push "$image:latest"
+          docker buildx build --platform linux/amd64,linux/arm64 \
+            -t "$image:${{ steps.v.outputs.version }}" -t "$image:latest" \
+            --push .
