@@ -28,7 +28,9 @@ public sealed class McpServerTests : IDisposable
             """);
         File.WriteAllText(Path.Combine(_repo, "manifest.yaml"), "features:\n  outbox: true");
 
-        var serverPath = Path.Combine(AppContext.BaseDirectory, "specdrift.dll");
+        // Ask the assembly where it is: the file is `Specdrift.dll`, and a hand-spelled
+        // `specdrift.dll` only resolves on a case-insensitive filesystem (macOS, not CI).
+        var serverPath = typeof(Cli).Assembly.Location;
         using var process = Process.Start(new ProcessStartInfo("dotnet", $"\"{serverPath}\" mcp")
         {
             RedirectStandardInput = true,

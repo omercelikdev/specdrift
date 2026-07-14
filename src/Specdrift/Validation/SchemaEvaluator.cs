@@ -136,12 +136,14 @@ public static class SchemaEvaluator
             return;
         }
 
-        if (schema["minimum"] is { } min && number < AsLong(min))
+        // Bounds on numbers are numbers, not integers — reading them as long would round
+        // `minimum: 0.5` down to 0 and pass 0.2 in silence.
+        if (schema["minimum"] is { } min && number < AsDouble(min))
         {
             Report(findings, path, "minimum", $"value {value} is under the minimum {min}");
         }
 
-        if (schema["maximum"] is { } max && number > AsLong(max))
+        if (schema["maximum"] is { } max && number > AsDouble(max))
         {
             Report(findings, path, "maximum", $"value {value} exceeds the maximum {max}");
         }
@@ -351,8 +353,12 @@ public static class SchemaEvaluator
         _ => "number",
     };
 
+    // Lengths and item counts are integer-valued by definition; numeric bounds are not.
     private static long AsLong(JsonNode node)
         => node.AsValue().TryGetValue<long>(out var l) ? l : (long)node.GetValue<double>();
+
+    private static double AsDouble(JsonNode node)
+        => node.AsValue().TryGetValue<double>(out var d) ? d : node.GetValue<long>();
 
     private static bool TryNumber(JsonValue value, out double number)
     {

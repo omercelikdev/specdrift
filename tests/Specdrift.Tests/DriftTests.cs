@@ -117,6 +117,33 @@ public sealed class DriftTests : IDisposable
     }
 
     [Fact]
+    public void A_quoted_schemaVersion_is_a_finding_not_a_crash()
+    {
+        // Quoted scalars stay strings on purpose (YamlToJson), so the engine must never cast blindly.
+        var report = Run("""schemaVersion: "1" """);
+
+        var skew = Assert.Single(report.Findings, f => f.RuleId == "SPEC0221");
+        Assert.Contains("\"1\"", skew.Message, StringComparison.Ordinal);   // reads apart from the integer 1
+        Assert.Equal(1, report.ExitCode);
+    }
+
+    [Fact]
+    public void A_missing_schemaVersion_is_a_finding_too()
+        => Assert.Contains(Run("features: {}").Findings,
+            f => f.RuleId == "SPEC0221" && f.Message.Contains("<none>", StringComparison.Ordinal));
+
+    [Theory]
+    [InlineData("""version: "1" """, "never guess forward")]
+    [InlineData("version: 2", "never guess forward")]
+    [InlineData("version: 1\nschemaVersion: \"1\"", "must be an integer")]
+    public void A_profile_of_the_wrong_shape_fails_loudly(string profileBody, string expected)
+    {
+        var profile = $"{profileBody}\nmanifest: manifest.yaml";
+        var error = Assert.Throws<FormatException>(() => DriftEngine.LoadProfile(profile));
+        Assert.Contains(expected, error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Bin_and_obj_are_never_scanned()
     {
         Write("src/App/obj/Generated.cs", "builder.AddPlatformOutbox();");
