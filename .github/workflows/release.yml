@@ -22,8 +22,8 @@ jobs:
           dotnet-version: 10.0.x
       - name: gates
         run: |
-          dotnet build Specdrift.sln --nologo -c Release
-          dotnet test Specdrift.sln --no-build --nologo -c Release
+          dotnet build specdrift.sln --nologo -c Release
+          dotnet test specdrift.sln --no-build --nologo -c Release
       - name: pack
         run: dotnet pack src/Specdrift/Specdrift.csproj --nologo -c Release --no-build -o out
       # Login LAST-MINUTE: the exchanged key lives ~1 hour.
