@@ -140,12 +140,22 @@ public static class DriftEngine
         var projectTexts = Scan(repoRoot, "*.csproj");
         var sourceTexts = Scan(repoRoot, "*.cs");
 
+        // OR-semantics (0.4.2): a package shared by several wiring rows is justified when
+        // ANY of them is enabled — bulk justifying Goldpath.Jobs must silence the
+        // notification/campaign rows for the same package (the goldpath issue #11 noise).
+        var justifiedPackages = new HashSet<string>(StringComparer.Ordinal);
         foreach (var rule in wiring)
         {
-            var node = JsonPaths.Resolve(manifest, rule.Feature);
-            var enabled = rule.In is { } values
-                ? node is not null && values.Contains(node.ToString())
-                : !JsonPaths.IsAbsentOrEmpty(node) && node?.ToString() != "false";
+            if (rule.Package is { } pkg && IsEnabled(manifest, rule))
+            {
+                justifiedPackages.Add(pkg);
+            }
+        }
+
+        var flaggedPackages = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var rule in wiring)
+        {
+            var enabled = IsEnabled(manifest, rule);
 
             var packagePresent = rule.Package is { } package
                 && projectTexts.Any(t => t.Contains($"\"{package}\"", StringComparison.Ordinal));
@@ -166,12 +176,22 @@ public static class DriftEngine
                         $"the manifest enables this feature but '{rule.Call}' is called nowhere — referenced, not wired"));
                 }
             }
-            else if (rule.Package is not null && packagePresent)
+            else if (rule.Package is { } pkg && packagePresent
+                && !justifiedPackages.Contains(pkg) && flaggedPackages.Add(pkg))
             {
-                findings.Add(new Finding("SPEC0203", Severity.Warning, rule.Feature,
-                    $"'{rule.Package}' is referenced but the manifest does not enable this feature — dead weight, or an undeclared capability"));
+                var candidates = string.Join(" | ", wiring.Where(w => w.Package == pkg).Select(w => w.Feature).Distinct());
+                findings.Add(new Finding("SPEC0203", Severity.Warning, candidates,
+                    $"'{pkg}' is referenced but no feature that wires it is enabled — dead weight, or an undeclared capability"));
             }
         }
+    }
+
+    private static bool IsEnabled(JsonNode manifest, WiringRule rule)
+    {
+        var node = JsonPaths.Resolve(manifest, rule.Feature);
+        return rule.In is { } values
+            ? node is not null && values.Contains(node.ToString())
+            : !JsonPaths.IsAbsentOrEmpty(node) && node?.ToString() != "false";
     }
 
     private static void CheckOpenApi(string repoRoot, IReadOnlyList<ArtifactPair> pairs, List<Finding> findings)

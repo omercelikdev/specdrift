@@ -10,8 +10,12 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/omercelikdev/specdrift</RepositoryUrl>
-    <Version>0.4.1</Version>
+    <Version>0.4.2</Version>
   </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources/goldpath-manifest.schema.v1.json" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="YamlDotNet" />

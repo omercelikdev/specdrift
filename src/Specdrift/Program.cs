@@ -19,8 +19,12 @@ namespace Specdrift
             specdrift — deterministic spec lint for manifest-driven golden paths
 
             usage:
-              specdrift validate <manifest.(yaml|yml|json)> --schema <schema.json> [--rules <rules.yaml>] [--format text|json]
-              specdrift drift --repo <dir> [--profile <drift.yaml>] [--format text|json]
+              specdrift validate <manifest.(yaml|yml|json)> [--schema <schema.json>] [--rules <rules.yaml>] [--format text|json] [--fail-on warn|error]
+              specdrift drift --repo <dir> [--profile <drift.yaml>] [--format text|json] [--fail-on warn|error]
+
+            --schema defaults to the EMBEDDED goldpath manifest schema (v1, version-stamped
+            with the tool); pass it only for forks/air-gapped overrides. --fail-on warn
+            makes warnings gate the exit code (default: error).
               specdrift mcp                          # stdio MCP server exposing spec_validate + spec_drift
             """;
 
@@ -52,6 +56,7 @@ namespace Specdrift
 
             string? manifestPath = null, schemaPath = null, rulesPath = null;
             var format = "text";
+            var failOn = "error";
             for (var i = 1; i < args.Length; i++)
             {
                 switch (args[i])
@@ -65,6 +70,9 @@ namespace Specdrift
                     case "--format":
                         format = Next(args, ref i);
                         break;
+                    case "--fail-on":
+                        failOn = Next(args, ref i);
+                        break;
                     default:
                         if (manifestPath is not null)
                         {
@@ -77,7 +85,7 @@ namespace Specdrift
                 }
             }
 
-            if (manifestPath is null || schemaPath is null || format is not ("text" or "json"))
+            if (manifestPath is null || format is not ("text" or "json") || failOn is not ("warn" or "error"))
             {
                 stderr.WriteLine(Usage);
                 return 2;
@@ -87,10 +95,10 @@ namespace Specdrift
             {
                 var report = ManifestValidator.Validate(
                     File.ReadAllText(manifestPath),
-                    File.ReadAllText(schemaPath),
+                    schemaPath is null ? EmbeddedSchema.V1() : File.ReadAllText(schemaPath),
                     rulesPath is null ? null : File.ReadAllText(rulesPath));
                 stdout.WriteLine(format == "json" ? report.ToJson() : report.ToText());
-                return report.ExitCode;
+                return report.ExitCodeFor(failOn == "warn");
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or FormatException or System.Text.Json.JsonException)
             {
@@ -103,6 +111,7 @@ namespace Specdrift
         {
             string? repo = null, profilePath = null;
             var format = "text";
+            var failOn = "error";
             for (var i = 1; i < args.Length; i++)
             {
                 switch (args[i])
@@ -116,13 +125,16 @@ namespace Specdrift
                     case "--format":
                         format = Next(args, ref i);
                         break;
+                    case "--fail-on":
+                        failOn = Next(args, ref i);
+                        break;
                     default:
                         stderr.WriteLine($"specdrift: unexpected argument '{args[i]}'");
                         return 2;
                 }
             }
 
-            if (repo is null || format is not ("text" or "json"))
+            if (repo is null || format is not ("text" or "json") || failOn is not ("warn" or "error"))
             {
                 stderr.WriteLine(Usage);
                 return 2;
@@ -134,7 +146,7 @@ namespace Specdrift
                 var profile = Specdrift.Drift.DriftEngine.LoadProfile(File.ReadAllText(profilePath));
                 var report = Specdrift.Drift.DriftEngine.Run(repo, profile);
                 stdout.WriteLine(format == "json" ? report.ToJson() : report.ToText());
-                return report.ExitCode;
+                return report.ExitCodeFor(failOn == "warn");
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or FormatException or System.Text.Json.JsonException)
             {
