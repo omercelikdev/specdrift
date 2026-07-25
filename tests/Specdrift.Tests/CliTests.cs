@@ -36,7 +36,7 @@ public class CliTests : IDisposable
         Assert.Equal(1, Run("validate", bad, "--schema", schema).Code);
         Assert.Equal(2, Run().Code);                                     // no args → usage
         Assert.Equal(2, Run("frobnicate").Code);                         // unknown verb
-        Assert.Equal(2, Run("validate", good).Code);                     // missing --schema
+        Assert.Equal(1, Run("validate", good).Code);                     // no --schema -> the EMBEDDED goldpath schema; this manifest is not one
         Assert.Equal(2, Run("validate", good, "--schema", schema, "--format", "xml").Code);
         Assert.Equal(2, Run("validate", Path.Combine(_dir, "absent.yaml"), "--schema", schema).Code);
     }

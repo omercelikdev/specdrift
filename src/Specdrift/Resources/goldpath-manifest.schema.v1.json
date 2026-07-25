@@ -1,0 +1,751 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://omercelik.dev/schemas/goldpath/manifest/v1.json",
+  "title": "Goldpath Manifest v1",
+  "description": "Single source of truth binding layer for Goldpath solutions and services. Contains no behavior: no endpoints, flows, or business rules (ADR-0002).",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "kind",
+    "name",
+    "description",
+    "owner"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "kind": {
+      "enum": [
+        "solution",
+        "service",
+        "module",
+        "worker",
+        "gateway"
+      ]
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Za-z0-9]*(\\.[A-Z][A-Za-z0-9]*)*$",
+      "maxLength": 64,
+      "description": "PascalCase segments separated by dots (Acme.Orders); corporate naming rules additionally enforced by Spec Engine (V8)."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 200
+    },
+    "owner": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "Team or owner slug; feeds CODEOWNERS generation."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "solution"
+          }
+        }
+      },
+      "then": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/envelope"
+          }
+        ],
+        "properties": {
+          "architecture": {
+            "$ref": "#/$defs/architecture"
+          },
+          "providers": {
+            "$ref": "#/$defs/providersFull"
+          },
+          "features": {
+            "$ref": "#/$defs/features"
+          },
+          "modules": {
+            "$ref": "#/$defs/modules"
+          },
+          "observability": {
+            "$ref": "#/$defs/observability"
+          },
+          "nfr": {
+            "$ref": "#/$defs/nfr"
+          }
+        },
+        "unevaluatedProperties": false
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "solution"
+          },
+          "features": {
+            "required": [
+              "campaign"
+            ],
+            "properties": {
+              "campaign": {
+                "not": {
+                  "const": false
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "features"
+        ]
+      },
+      "then": {
+        "properties": {
+          "providers": {
+            "properties": {
+              "broker": {
+                "enum": [
+                  "rabbitmq",
+                  "kafka",
+                  "inmemory"
+                ],
+                "description": "features.campaign requires a broker (campaign RFC D8): the release path IS broker fan-out. 'none' is rejected here; the default (rabbitmq) satisfies the rule."
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "service"
+          }
+        }
+      },
+      "then": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/envelope"
+          }
+        ],
+        "required": [
+          "boundedContext",
+          "specs"
+        ],
+        "properties": {
+          "boundedContext": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$",
+            "description": "Must match a context in the domain memory map (validated by Spec Engine)."
+          },
+          "providers": {
+            "$ref": "#/$defs/providersServiceOverride"
+          },
+          "features": {
+            "$ref": "#/$defs/features"
+          },
+          "modules": {
+            "$ref": "#/$defs/modules"
+          },
+          "specs": {
+            "$ref": "#/$defs/specs"
+          },
+          "externalSystems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/externalSystem"
+            }
+          },
+          "observability": {
+            "$ref": "#/$defs/observability"
+          },
+          "nfr": {
+            "$ref": "#/$defs/nfr"
+          }
+        },
+        "unevaluatedProperties": false
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "module"
+          }
+        }
+      },
+      "then": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/envelope"
+          }
+        ],
+        "properties": {
+          "codeOrg": {
+            "enum": [
+              "clean-architecture",
+              "vertical-slice"
+            ],
+            "description": "Only allowed override for modules; providers are inherited and locked."
+          }
+        },
+        "unevaluatedProperties": false
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "worker"
+          }
+        }
+      },
+      "then": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/envelope"
+          }
+        ],
+        "required": [
+          "workerType"
+        ],
+        "properties": {
+          "workerType": {
+            "enum": [
+              "scheduler-quartz",
+              "consumer-kafka",
+              "consumer-rabbitmq",
+              "batch",
+              "bulk"
+            ]
+          },
+          "trigger": {
+            "type": "object",
+            "description": "Schedule (cron) for schedulers, topic/queue for consumers.",
+            "properties": {
+              "cron": {
+                "type": "string"
+              },
+              "topic": {
+                "type": "string"
+              },
+              "queue": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "nfr": {
+            "$ref": "#/$defs/nfr"
+          }
+        },
+        "unevaluatedProperties": false
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "gateway"
+          }
+        }
+      },
+      "then": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/envelope"
+          }
+        ],
+        "properties": {
+          "autoRegisterServices": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "unevaluatedProperties": false
+      }
+    }
+  ],
+  "$defs": {
+    "envelope": {
+      "type": "object",
+      "description": "Marks the common envelope fields as evaluated so kind-specific 'unevaluatedProperties: false' allows them (annotations do not flow down from the parent schema in draft 2020-12).",
+      "properties": {
+        "schemaVersion": true,
+        "kind": true,
+        "name": true,
+        "description": true,
+        "owner": true
+      }
+    },
+    "architecture": {
+      "type": "object",
+      "properties": {
+        "deploymentModel": {
+          "enum": [
+            "monolith",
+            "modular-monolith",
+            "microservice"
+          ],
+          "default": "modular-monolith"
+        },
+        "codeOrg": {
+          "enum": [
+            "clean-architecture",
+            "vertical-slice"
+          ],
+          "default": "vertical-slice"
+        }
+      },
+      "additionalProperties": false
+    },
+    "providersFull": {
+      "type": "object",
+      "properties": {
+        "db": {
+          "enum": [
+            "postgresql",
+            "sqlserver",
+            "oracle"
+          ],
+          "default": "postgresql"
+        },
+        "cache": {
+          "enum": [
+            "redis",
+            "inmemory"
+          ],
+          "default": "redis"
+        },
+        "broker": {
+          "enum": [
+            "rabbitmq",
+            "kafka",
+            "inmemory",
+            "none"
+          ],
+          "default": "rabbitmq"
+        },
+        "auth": {
+          "enum": [
+            "openid",
+            "apikey",
+            "none"
+          ],
+          "default": "openid"
+        }
+      },
+      "additionalProperties": false
+    },
+    "providersServiceOverride": {
+      "type": "object",
+      "description": "Services may override db/cache only; broker and auth are solution-wide.",
+      "properties": {
+        "db": {
+          "enum": [
+            "postgresql",
+            "sqlserver",
+            "oracle"
+          ]
+        },
+        "cache": {
+          "enum": [
+            "redis",
+            "inmemory"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "toggle": {
+      "description": "Short form 'true' means enabled with default options. Disabled features do not exist in the generated app (compile-time composition).",
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "object"
+        }
+      ]
+    },
+    "features": {
+      "type": "object",
+      "properties": {
+        "idempotency": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "store": {
+                  "enum": [
+                    "database",
+                    "redis"
+                  ],
+                  "default": "redis"
+                },
+                "ttlHours": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 24
+                },
+                "onConflict": {
+                  "enum": [
+                    "reject",
+                    "wait"
+                  ],
+                  "default": "reject"
+                },
+                "fingerprint": {
+                  "enum": [
+                    "strict",
+                    "none"
+                  ],
+                  "default": "strict"
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "outbox": {
+          "$ref": "#/$defs/toggle",
+          "description": "Includes inbox/dedup on consumers. Requires a broker (rule V1)."
+        },
+        "auditTrail": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "store": {
+                  "enum": [
+                    "database",
+                    "eventstream"
+                  ],
+                  "default": "database"
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "softDelete": {
+          "$ref": "#/$defs/toggle"
+        },
+        "multiTenancy": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "strategy": {
+                  "enum": [
+                    "header",
+                    "subdomain"
+                  ],
+                  "default": "header"
+                },
+                "isolation": {
+                  "enum": [
+                    "shared-db"
+                  ],
+                  "default": "shared-db"
+                },
+                "strict": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "exemptPaths": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": [
+                    "/health",
+                    "/alive",
+                    "/openapi"
+                  ]
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "dataProtection": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "mode": {
+                  "enum": [
+                    "annotate",
+                    "catalog",
+                    "both"
+                  ],
+                  "default": "annotate"
+                },
+                "redactor": {
+                  "enum": [
+                    "erase",
+                    "hmac"
+                  ],
+                  "default": "erase"
+                },
+                "auditMasking": {
+                  "type": "boolean",
+                  "default": true
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "distributedLocking": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "enum": [
+                    "redis",
+                    "postgres",
+                    "sqlserver"
+                  ],
+                  "default": "redis"
+                },
+                "connectionName": {
+                  "type": "string",
+                  "default": "redis"
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "distributedCaching": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "levels": {
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "l1",
+                      "l2"
+                    ]
+                  },
+                  "uniqueItems": true,
+                  "default": [
+                    "l1",
+                    "l2"
+                  ]
+                },
+                "redis": {
+                  "type": "object",
+                  "properties": {
+                    "connectionName": {
+                      "type": "string",
+                      "default": "redis"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "defaultTtl": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 300
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "archival": {
+          "$ref": "#/$defs/toggle",
+          "description": "Compliance archival: same-database archive store with a tamper-evident hash chain, retention purge, legal hold and KVKK/GDPR erasure. Runs on the jobs module."
+        },
+        "bulk": {
+          "$ref": "#/$defs/toggle",
+          "description": "File/set intake (L3): content-addressed same-database file store, CSV parsing, per-row validation with a value-free report, an audited approve/reject gate, and execution as jobs runs with repair-queue row isolation. Runs on the jobs module."
+        },
+        "notification": {
+          "$ref": "#/$defs/toggle",
+          "description": "Transactional notifications: evidence rows with a required unique dedup key, render-at-request code templates (hash-stamped), claim-before-send delivery via email/webhook channel seams, body retention. Runs on the jobs module."
+        },
+        "campaign": {
+          "$ref": "#/$defs/toggle",
+          "description": "Governed mass-execution (L4): durable target plan, single-leader pacing under a LIVE policy (TPS/quota/window/max-in-flight), claim-before-execute broker fan-out, batching outcome sink, audited verbs. Runs on the jobs module and REQUIRES a broker (rule below)."
+        }
+      },
+      "additionalProperties": false
+    },
+    "modules": {
+      "type": "array",
+      "description": "Ring C advanced modules. v1 catalog; grows via module RFCs.",
+      "items": {
+        "enum": [
+          "yarpGateway"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "observability": {
+      "type": "object",
+      "properties": {
+        "profile": {
+          "enum": [
+            "minimal",
+            "standard",
+            "full"
+          ],
+          "default": "standard"
+        },
+        "exporters": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "otlp",
+              "prometheus",
+              "console"
+            ]
+          },
+          "uniqueItems": true,
+          "default": [
+            "otlp"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "nfr": {
+      "type": "object",
+      "description": "Release-gate targets (test cycle 8.4). Absence: warn on MR, block on RC (rule V5).",
+      "properties": {
+        "p95LatencyMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "throughputRps": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "availability": {
+          "type": "string",
+          "pattern": "^\\d{2}(\\.\\d+)?$"
+        },
+        "errorBudgetPct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "additionalProperties": false
+    },
+    "specs": {
+      "type": "object",
+      "required": [
+        "openapi"
+      ],
+      "properties": {
+        "openapi": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^specs/.+\\.(ya?ml|json)$"
+          }
+        },
+        "asyncapi": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^specs/.+\\.(ya?ml|json)$"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "externalSystem": {
+      "type": "object",
+      "required": [
+        "name",
+        "kind",
+        "direction"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "kind": {
+          "enum": [
+            "rest",
+            "soap",
+            "queue",
+            "file"
+          ]
+        },
+        "spec": {
+          "type": "string"
+        },
+        "direction": {
+          "enum": [
+            "outbound",
+            "inbound",
+            "both"
+          ]
+        },
+        "mock": {
+          "type": "object",
+          "description": "Stub format is canonical WireMock JSON (provider: WireMock or Mockifyr). Absence triggers rule V6 warning.",
+          "properties": {
+            "strategy": {
+              "enum": [
+                "stub",
+                "record-replay",
+                "passthrough"
+              ],
+              "default": "stub"
+            },
+            "stubs": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "criticality": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "default": "medium",
+          "description": "Selects the resilience profile defaults (timeout/retry/circuit-breaker)."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

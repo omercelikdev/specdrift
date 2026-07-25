@@ -19,6 +19,10 @@ public sealed record Report(IReadOnlyList<Finding> Findings)
     /// <summary>Exit-code contract: 0 clean · 1 error findings present.</summary>
     public int ExitCode => Findings.Any(f => f.Severity == Severity.Error) ? 1 : 0;
 
+    /// <summary>Exit code under an explicit gate: `--fail-on warn` makes warnings block too.</summary>
+    public int ExitCodeFor(bool failOnWarnings)
+        => Findings.Any(f => f.Severity == Severity.Error || (failOnWarnings && f.Severity == Severity.Warning)) ? 1 : 0;
+
     /// <summary>Human rendering — one line per finding, stable order.</summary>
     public string ToText()
         => Findings.Count == 0

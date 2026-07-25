@@ -17,12 +17,12 @@ public static class SpecTools
     [Description("Validate a YAML/JSON manifest against a JSON schema and optional cross-field invariant rules. Returns findings as JSON; 'clean' is an empty array. Deterministic — same inputs, same output.")]
     public static string SpecValidate(
         [Description("Path to the manifest (yaml or json)")] string manifestPath,
-        [Description("Path to the JSON schema")] string schemaPath,
+        [Description("Optional path to a JSON schema override — omit to use the embedded goldpath manifest schema")] string? schemaPath = null,
         [Description("Optional path to the invariant rules yaml")] string? rulesPath = null)
     {
         var report = ManifestValidator.Validate(
             File.ReadAllText(manifestPath),
-            File.ReadAllText(schemaPath),
+            schemaPath is null ? EmbeddedSchema.V1() : File.ReadAllText(schemaPath),
             rulesPath is null ? null : File.ReadAllText(rulesPath));
         return report.ToJson();
     }
