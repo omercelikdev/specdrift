@@ -37,7 +37,8 @@ jobs:
         id: nuget-login
         uses: NuGet/login@v1
         with:
-          user: omercelikdev   # the nuget.org PROFILE name the policy belongs to
+          user: omercelikdev   # the nuget.org PROFILE name the policy belongs to — after the qorpe
+          # transfer the policy must list repository owner `qorpe` (update on nuget.org)
       - name: push to nuget.org
         run: |
           dotnet nuget push "out/*.nupkg" \
@@ -52,7 +53,7 @@ jobs:
           gh release create "$GITHUB_REF_NAME" --title "specdrift $version" --generate-notes \
             $(case "$version" in *-*) echo --prerelease;; esac)
 
-  # The container face of the same release: ghcr.io/omercelikdev/specdrift — no secret
+  # The container face of the same release: ghcr.io/qorpe/specdrift — no secret
   # (GITHUB_TOKEN writes packages). Runs on every tag, and on dispatch for an existing tag.
   image:
     runs-on: ubuntu-latest
