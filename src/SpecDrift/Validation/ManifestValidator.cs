@@ -1,6 +1,6 @@
-using Specdrift.Yaml;
+using SpecDrift.Yaml;
 
-namespace Specdrift.Validation;
+namespace SpecDrift.Validation;
 
 /// <summary>
 /// The `validate` verb: JSON-Schema shape validation (the in-tree

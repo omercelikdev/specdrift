@@ -1,7 +1,7 @@
 using System.Text.Json.Nodes;
-using Specdrift.Yaml;
+using SpecDrift.Yaml;
 
-namespace Specdrift.Validation;
+namespace SpecDrift.Validation;
 
 /// <summary>One declared invariant: when a condition holds, require/forbid another path.</summary>
 public sealed record Rule(

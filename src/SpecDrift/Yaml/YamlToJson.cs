@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Text.Json.Nodes;
 using YamlDotNet.RepresentationModel;
 
-namespace Specdrift.Yaml;
+namespace SpecDrift.Yaml;
 
 /// <summary>
 /// YAML → <see cref="JsonNode"/> with YAML 1.2 core-schema scalar inference (bool/int/float/

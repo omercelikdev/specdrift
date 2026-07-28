@@ -1,7 +1,7 @@
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 
-namespace Specdrift.Validation;
+namespace SpecDrift.Validation;
 
 /// <summary>
 /// A deterministic evaluator for the pragmatic JSON-Schema 2020-12 subset golden-path

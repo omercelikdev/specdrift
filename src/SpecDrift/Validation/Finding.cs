@@ -1,4 +1,4 @@
-namespace Specdrift.Validation;
+namespace SpecDrift.Validation;
 
 /// <summary>Severity of a finding — errors gate (exit 1), warnings inform.</summary>
 public enum Severity

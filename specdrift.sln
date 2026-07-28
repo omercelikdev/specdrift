@@ -5,11 +5,11 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Specdrift", "src\Specdrift\Specdrift.csproj", "{4A5E5E2F-92F7-4FFD-AD8F-03CE4C5C9B71}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpecDrift", "src\SpecDrift\SpecDrift.csproj", "{4A5E5E2F-92F7-4FFD-AD8F-03CE4C5C9B71}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Specdrift.Tests", "tests\Specdrift.Tests\Specdrift.Tests.csproj", "{F486AAEC-9C83-4E03-B2BF-4DDE917AE88F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpecDrift.Tests", "tests\SpecDrift.Tests\SpecDrift.Tests.csproj", "{F486AAEC-9C83-4E03-B2BF-4DDE917AE88F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

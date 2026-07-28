@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using Xunit;
 
-namespace Specdrift.Tests;
+namespace SpecDrift.Tests;
 
 /// <summary>
 /// The M3 proof, protocol-level: a real client-shaped exchange over stdio — initialize,
@@ -28,7 +28,7 @@ public sealed class McpServerTests : IDisposable
             """);
         File.WriteAllText(Path.Combine(_repo, "manifest.yaml"), "features:\n  outbox: true");
 
-        // Ask the assembly where it is: the file is `Specdrift.dll`, and a hand-spelled
+        // Ask the assembly where it is: the file is `SpecDrift.dll`, and a hand-spelled
         // `specdrift.dll` only resolves on a case-insensitive filesystem (macOS, not CI).
         var serverPath = typeof(Cli).Assembly.Location;
         using var process = Process.Start(new ProcessStartInfo("dotnet", $"\"{serverPath}\" mcp")
@@ -71,7 +71,7 @@ public sealed class McpServerTests : IDisposable
                 clientInfo = new { name = "specdrift-tests", version = "0" },
             },
         });
-        Assert.Equal("specdrift", initialize.GetProperty("result").GetProperty("serverInfo").GetProperty("name").GetString());
+        Assert.Equal("SpecDrift", initialize.GetProperty("result").GetProperty("serverInfo").GetProperty("name").GetString());
 
         await process.StandardInput.WriteLineAsync("""{"jsonrpc":"2.0","method":"notifications/initialized"}""");
         await process.StandardInput.FlushAsync();

@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Specdrift.Validation;
+namespace SpecDrift.Validation;
 
 /// <summary>
 /// The pinned goldpath manifest schema, embedded at build time (spec-engine RFC: the
@@ -12,7 +12,7 @@ public static class EmbeddedSchema
     public static string V1()
     {
         using var stream = Assembly.GetExecutingAssembly()
-            .GetManifestResourceStream("Specdrift.Resources.goldpath-manifest.schema.v1.json")
+            .GetManifestResourceStream("SpecDrift.Resources.goldpath-manifest.schema.v1.json")
             ?? throw new InvalidOperationException("embedded schema resource missing — the build is broken");
         using var reader = new StreamReader(stream);
         return reader.ReadToEnd();

@@ -1,8 +1,8 @@
-using Specdrift.Validation;
+using SpecDrift.Validation;
 
-return Specdrift.Cli.Run(args, Console.Out, Console.Error);
+return SpecDrift.Cli.Run(args, Console.Out, Console.Error);
 
-namespace Specdrift
+namespace SpecDrift
 {
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
@@ -143,8 +143,8 @@ namespace Specdrift
             profilePath ??= Path.Combine(repo, ".specdrift", "drift.yaml");
             try
             {
-                var profile = Specdrift.Drift.DriftEngine.LoadProfile(File.ReadAllText(profilePath));
-                var report = Specdrift.Drift.DriftEngine.Run(repo, profile);
+                var profile = SpecDrift.Drift.DriftEngine.LoadProfile(File.ReadAllText(profilePath));
+                var report = SpecDrift.Drift.DriftEngine.Run(repo, profile);
                 stdout.WriteLine(format == "json" ? report.ToJson() : report.ToText());
                 return report.ExitCodeFor(failOn == "warn");
             }
@@ -163,7 +163,7 @@ namespace Specdrift
             builder.Services
                 .AddMcpServer(options => options.ServerInfo = new()
                 {
-                    Name = "specdrift",
+                    Name = "SpecDrift",
                     Version = typeof(Cli).Assembly.GetName().Version?.ToString(3) ?? "0.0.0",
                 })
                 .WithStdioServerTransport()
