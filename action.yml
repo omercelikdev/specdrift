@@ -1,5 +1,5 @@
 # Use specdrift in ANY repo's CI with one line:
-#   - uses: omercelikdev/specdrift@v0.4.1
+#   - uses: qorpe/specdrift@v0.4.1
 #     with: { args: "validate .goldpath/manifest.yaml --schema schemas/manifest.json --rules .specdrift/rules.yaml" }
 name: specdrift
 description: Deterministic spec lint — manifest schema + cross-field rules validation and manifest-vs-repo drift detection. Never calls an LLM.
@@ -14,4 +14,4 @@ runs:
   using: composite
   steps:
     - shell: bash
-      run: docker run --rm -v "$PWD:/work" -w /work ghcr.io/omercelikdev/specdrift:0.4.1 ${{ inputs.args }}
+      run: docker run --rm -v "$PWD:/work" -w /work ghcr.io/qorpe/specdrift:0.4.1 ${{ inputs.args }}

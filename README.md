@@ -20,9 +20,9 @@ specdrift validate .platform/manifest.yaml --schema manifest.schema.json --rules
 | How | One line |
 |---|---|
 | .NET tool | `dotnet tool install -g specdrift` |
-| Docker (any stack) | `docker run --rm -v "$PWD:/work" -w /work ghcr.io/omercelikdev/specdrift:0.4.1 <args>` |
-| GitHub Action | `- uses: omercelikdev/specdrift@v0.4.1` with `args:` |
-| MCP server (agents) | `docker run --rm -i ghcr.io/omercelikdev/specdrift:0.4.1 mcp` — stdio tools `spec_validate`, `spec_drift` |
+| Docker (any stack) | `docker run --rm -v "$PWD:/work" -w /work ghcr.io/qorpe/specdrift:0.4.1 <args>` |
+| GitHub Action | `- uses: qorpe/specdrift@v0.4.1` with `args:` |
+| MCP server (agents) | `docker run --rm -i ghcr.io/qorpe/specdrift:0.4.1 mcp` — stdio tools `spec_validate`, `spec_drift` |
 
 The image is multi-arch (amd64 + arm64). The engine is generic: the schema, rules and
 drift profiles are DATA — point them at any repository, any language.
