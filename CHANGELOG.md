@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.4.3] - 2026-07-28
+
+### Changed
+
+- The project moved to the `qorpe` organization: repository at `github.com/qorpe/specdrift`,
+  images at `ghcr.io/qorpe/specdrift` (old paths keep working), publishing identity updated.
+- The package id is now displayed as **SpecDrift** on the gallery (ids are case-insensitive —
+  same package, nothing to change on the consumer side). Namespaces/assembly follow suit;
+  the CLI command (`specdrift`) and the `.specdrift/` config directory are unchanged.
+
 ## [0.4.1] - 2026-07-10
 
 ### Fixed
