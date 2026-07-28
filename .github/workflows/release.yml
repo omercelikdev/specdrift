@@ -37,7 +37,7 @@ jobs:
         id: nuget-login
         uses: NuGet/login@v1
         with:
-          user: qorpe   # the nuget.org organization owning the trusted-publishing policy
+          user: omercelikdev   # the USERNAME of the policy CREATOR (not the org that owns the package)
       - name: push to nuget.org
         run: |
           dotnet nuget push "out/*.nupkg" \
