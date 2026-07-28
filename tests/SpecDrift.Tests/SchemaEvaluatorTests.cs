@@ -1,9 +1,9 @@
 using System.Text.Json.Nodes;
-using Specdrift.Validation;
-using Specdrift.Yaml;
+using SpecDrift.Validation;
+using SpecDrift.Yaml;
 using Xunit;
 
-namespace Specdrift.Tests;
+namespace SpecDrift.Tests;
 
 /// <summary>
 /// Keyword-by-keyword coverage of the in-tree evaluator — the evaluator IS the product;

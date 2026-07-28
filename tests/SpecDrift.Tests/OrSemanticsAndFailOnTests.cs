@@ -1,8 +1,8 @@
-using Specdrift.Drift;
-using Specdrift.Validation;
+using SpecDrift.Drift;
+using SpecDrift.Validation;
 using Xunit;
 
-namespace Specdrift.Tests;
+namespace SpecDrift.Tests;
 
 /// <summary>
 /// 0.4.2 — the OR-semantics fix (a package shared by several wiring rows is justified

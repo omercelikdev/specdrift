@@ -1,8 +1,8 @@
 using System.Text.Json.Nodes;
-using Specdrift.Validation;
-using Specdrift.Yaml;
+using SpecDrift.Validation;
+using SpecDrift.Yaml;
 
-namespace Specdrift.Drift;
+namespace SpecDrift.Drift;
 
 /// <summary>One wiring expectation: when the manifest enables a feature, the repo must show it.</summary>
 public sealed record WiringRule(string Feature, IReadOnlyList<string>? In, string? Package, string? Call);

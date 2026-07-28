@@ -31,7 +31,7 @@ jobs:
           dotnet build specdrift.sln --nologo -c Release
           dotnet test specdrift.sln --no-build --nologo -c Release
       - name: pack
-        run: dotnet pack src/Specdrift/Specdrift.csproj --nologo -c Release --no-build -o out
+        run: dotnet pack src/SpecDrift/SpecDrift.csproj --nologo -c Release --no-build -o out
       # Login LAST-MINUTE: the exchanged key lives ~1 hour.
       - name: trusted-publishing login (OIDC -> temp key)
         id: nuget-login

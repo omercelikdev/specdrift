@@ -1,6 +1,6 @@
 using Xunit;
 
-namespace Specdrift.Tests;
+namespace SpecDrift.Tests;
 
 public class CliTests : IDisposable
 {

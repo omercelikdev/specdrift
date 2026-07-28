@@ -1,8 +1,8 @@
-using Specdrift.Drift;
-using Specdrift.Validation;
+using SpecDrift.Drift;
+using SpecDrift.Validation;
 using Xunit;
 
-namespace Specdrift.Tests;
+namespace SpecDrift.Tests;
 
 public sealed class DriftTests : IDisposable
 {

@@ -2,10 +2,10 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Specdrift</RootNamespace>
+    <RootNamespace>SpecDrift</RootNamespace>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>specdrift</ToolCommandName>
-    <PackageId>specdrift</PackageId>
+    <PackageId>SpecDrift</PackageId>
     <Description>Deterministic spec lint for manifest-driven golden paths: schema + cross-field invariant validation, manifest-vs-repo drift detection, and a stdio MCP server (spec_validate, spec_drift). Never calls an LLM — LLMs call it.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>

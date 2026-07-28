@@ -1,6 +1,6 @@
 using System.Text.Json.Nodes;
 
-namespace Specdrift.Validation;
+namespace SpecDrift.Validation;
 
 /// <summary>Dotted-path resolution shared by the rule and drift engines.</summary>
 internal static class JsonPaths

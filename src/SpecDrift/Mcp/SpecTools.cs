@@ -1,9 +1,9 @@
 using System.ComponentModel;
 using ModelContextProtocol.Server;
-using Specdrift.Drift;
-using Specdrift.Validation;
+using SpecDrift.Drift;
+using SpecDrift.Validation;
 
-namespace Specdrift.Mcp;
+namespace SpecDrift.Mcp;
 
 /// <summary>
 /// The MCP surface: the SAME two verbs, so coding agents ask the engine instead of

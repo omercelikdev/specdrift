@@ -1,14 +1,14 @@
-# Use specdrift in ANY repo's CI with one line:
+# Use SpecDrift in ANY repo's CI with one line:
 #   - uses: qorpe/specdrift@v0.4.1
 #     with: { args: "validate .goldpath/manifest.yaml --schema schemas/manifest.json --rules .specdrift/rules.yaml" }
-name: specdrift
+name: SpecDrift
 description: Deterministic spec lint — manifest schema + cross-field rules validation and manifest-vs-repo drift detection. Never calls an LLM.
 branding:
   icon: check-circle
   color: yellow
 inputs:
   args:
-    description: Arguments passed to the specdrift CLI (e.g. "drift --profile .specdrift/drift.yaml")
+    description: Arguments passed to the SpecDrift CLI (e.g. "drift --profile .specdrift/drift.yaml")
     required: true
 runs:
   using: composite

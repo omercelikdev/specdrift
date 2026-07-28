@@ -1,17 +1,17 @@
-# specdrift
+# SpecDrift
 
 Deterministic spec lint for manifest-driven golden paths.
 
 A golden path lives or dies by one promise: **the manifest is the single source of truth.**
 Schemas validate the manifest's shape and static analyzers guard the code — but nothing
 watches the space *between* artifacts, where "the manifest says X, the repo does Y" rots
-silently. That gap is exactly where AI-generated changes decay. specdrift is the lint layer
+silently. That gap is exactly where AI-generated changes decay. SpecDrift is the lint layer
 for that gap, and it is deliberately boring: **it never calls an LLM — LLMs call it.**
 
 ```bash
-dotnet tool install -g specdrift
+dotnet tool install -g SpecDrift
 
-specdrift validate .platform/manifest.yaml --schema manifest.schema.json --rules rules.yaml
+SpecDrift validate .platform/manifest.yaml --schema manifest.schema.json --rules rules.yaml
 ```
 
 
@@ -19,7 +19,7 @@ specdrift validate .platform/manifest.yaml --schema manifest.schema.json --rules
 
 | How | One line |
 |---|---|
-| .NET tool | `dotnet tool install -g specdrift` |
+| .NET tool | `dotnet tool install -g SpecDrift` |
 | Docker (any stack) | `docker run --rm -v "$PWD:/work" -w /work ghcr.io/qorpe/specdrift:0.4.1 <args>` |
 | GitHub Action | `- uses: qorpe/specdrift@v0.4.1` with `args:` |
 | MCP server (agents) | `docker run --rm -i ghcr.io/qorpe/specdrift:0.4.1 mcp` — stdio tools `spec_validate`, `spec_drift` |
@@ -72,12 +72,12 @@ drift profiles are DATA — point them at any repository, any language.
   coding agents ask the engine instead of guessing. Register it like any stdio server:
 
   ```json
-  { "mcpServers": { "specdrift": { "command": "specdrift", "args": ["mcp"] } } }
+  { "mcpServers": { "SpecDrift": { "command": "SpecDrift", "args": ["mcp"] } } }
   ```
 
 ## Profiles are data, the engine is generic
 
-specdrift knows nothing about any particular platform. The schema, the invariant rules and
+SpecDrift knows nothing about any particular platform. The schema, the invariant rules and
 (coming with `drift`) the wiring tables are **profile data** that each golden path ships in
 its own repository:
 
